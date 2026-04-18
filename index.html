@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empadronamiento Huarmey 2026</title>
+    <style>
+        :root { --rojo: #C62828; --verde: #2E7D32; --gris: #f4f4f4; }
+        body { font-family: 'Roboto', sans-serif; background: var(--gris); margin: 0; padding: 15px; }
+        .card { background: white; max-width: 500px; margin: auto; padding: 25px; border-radius: 20px; border-top: 10px solid var(--rojo); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .logo { display: block; margin: 0 auto 20px; max-width: 180px; }
+        h2 { text-align: center; color: var(--verde); font-size: 20px; margin-bottom: 25px; }
+        section { margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 10px; }
+        legend { font-weight: bold; color: var(--rojo); font-size: 14px; padding: 0 10px; }
+        label { display: block; margin-top: 10px; font-size: 13px; font-weight: 600; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .btn { background: var(--verde); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        .btn:active { transform: scale(0.95); }
+        .offline-notice { background: #ffebee; color: #c62828; text-align: center; padding: 10px; border-radius: 8px; font-size: 12px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <img src="ICONO HUARMEY.png" class="logo">
+    <h2>Campaña Agrícola 2026</h2>
+    <div id="offline-msg" class="offline-notice">⚠️ Modo Offline: Los datos se guardarán localmente</div>
+
+    <form id="formEmpadronamiento">
+        <section>
+            <legend>1. INFORMACIÓN PERSONAL</legend>
+            <label>Tipo de Registro:</label>
+            <select id="tipoReg" required>
+                <option value="Independiente">Registro Independiente</option>
+                <option value="JOSE CHAVEZ">JOSE CHAVEZ</option>
+                <option value="RIVALDO VALLES">RIVALDO VALLES</option>
+                <option value="ALEX RUFASTO">ALEX RUFASTO</option>
+            </select>
+
+            <label>DNI (8 dígitos):</label>
+            <input type="number" id="dni" required pattern="\d{8}" oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);">
+
+            <label>Apellidos y Nombres:</label>
+            <input type="text" id="apellidos" required>
+
+            <label>Fecha de Nacimiento:</label>
+            <input type="date" id="nacimiento" required onchange="calcularEdad(this.value)">
+
+            <label>Edad:</label>
+            <input type="text" id="edad" readonly style="background:#eee">
+
+            <label>N° de Hijos:</label>
+            <input type="number" id="hijos" required min="0">
+
+            <label>Celular / WhatsApp (9 dígitos):</label>
+            <div style="display:flex; gap:5px">
+                <input type="number" id="celular" placeholder="Celular" required>
+                <input type="number" id="whatsapp" placeholder="WhatsApp" required>
+            </div>
+        </section>
+
+<label>¿Cómo conociste la empresa?</label>
+<select id="conoce" required>
+    <option value="">Seleccione...</option>
+    <option value="Facebook">Facebook</option>
+    <option value="Amigo">Amigo</option>
+    <option value="WhatsApp">WhatsApp</option>
+    <option value="Líder">Líder</option>
+    <option value="Reclutador">Reclutador</option>
+    <option value="Otros">Otros</option>
+</select>
+
+<label>Buenas referencias:</label>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 5px;">
+    <label style="font-weight:normal; font-size:12px;"><input type="checkbox" name="ref" value="Buenos pagos"> Buenos pagos</label>
+    <label style="font-weight:normal; font-size:12px;"><input type="checkbox" name="ref" value="Buen trato"> Buen trato</label>
+    <label style="font-weight:normal; font-size:12px;"><input type="checkbox" name="ref" value="Buenos bonos"> Buenos bonos</label>
+    <label style="font-weight:normal; font-size:12px;"><input type="checkbox" name="ref" value="Buenos frutos"> Buenos frutos</label>
+    <label style="font-weight:normal; font-size:12px;"><input type="checkbox" name="ref" value="Ninguno"> Ninguno</label>
+</div>
+
+        <section>
+            <legend>2. LABORAL Y RESIDENCIA</legend>
+            <label>Experiencia:</label>
+            <select id="experiencia">
+                <option value="Ninguno">Ninguno</option>
+                <option value="Cosecha Arándanos">Cosecha arándanos</option>
+                <option value="Operario Packing">Operario packing</option>
+                <option value="Conductor">Conductor AI-II-III</option>
+            </select>
+
+            <label>Departamento / Provincia / Distrito:</label>
+            <input type="text" id="dep" placeholder="Departamento" required>
+            <input type="text" id="prov" placeholder="Provincia" required>
+            <input type="text" id="dist" placeholder="Distrito" required>
+        </section>
+
+        <button type="submit" class="btn">REGISTRAR PERSONAL</button>
+    </form>
+</div>
+
+<script src="https://unpkg.com/dexie@3.2.0/dist/dexie.min.js"></script>
+<script>
+    const db = new Dexie('HuarmeyDB_2026');
+    db.version(1).stores({ registros: '++id, estado' });
+
+    function calcularEdad(fecha) {
+        const hoy = new Date();
+        const cumple = new Date(fecha);
+        let edad = hoy.getFullYear() - cumple.getFullYear();
+        document.getElementById('edad').value = edad + " años";
+    }
+
+    document.getElementById('formEmpadronamiento').onsubmit = async (e) => {
+    e.preventDefault();
+    
+    // Captura las referencias marcadas y las une con comas
+    const refs = Array.from(document.querySelectorAll('input[name="ref"]:checked'))
+                      .map(cb => cb.value)
+                      .join(", ");
+
+    const registro = {
+        fecha: new Date().toLocaleString('es-PE'),
+        tipoReg: document.getElementById('tipoReg').value,
+        dni: document.getElementById('dni').value,
+        apellidos: document.getElementById('apellidos').value,
+        nacimiento: document.getElementById('nacimiento').value,
+        edad: document.getElementById('edad').value,
+        hijos: document.getElementById('hijos').value,
+        celular: document.getElementById('celular').value,
+        whatsapp: document.getElementById('whatsapp').value,
+        conoce: document.getElementById('conoce').value,      // NUEVO
+        referencias: refs || "Ninguna",                      // NUEVO
+        tipoTrabajo: document.getElementById('tipoTrabajo').value,
+        experiencia: document.getElementById('experiencia').value,
+        dep: document.getElementById('dep').value,
+        prov: document.getElementById('prov').value,
+        dist: document.getElementById('dist').value,
+        residencia: document.getElementById('residencia').value,
+        disponibilidad: document.getElementById('disponibilidad').value,
+        estado: 'P'
+    };
+    
+    await db.registros.add(registro);
+    alert("✅ Guardado localmente. Se sincronizará al detectar internet.");
+    e.target.reset();
+    if (navigator.onLine) sincronizar();
+};
+
+    async function sincronizar() {
+        if (!navigator.onLine) return;
+        const pends = await db.registros.where('estado').equals('P').toArray();
+        for (let r of pends) {
+            try {
+                const res = await fetch('TU_URL_EXEC', {
+                    method: 'POST',
+                    body: JSON.stringify(r)
+                });
+                if (res.ok) await db.registros.update(r.id, { estado: 'E' });
+            } catch (e) { console.error(e); }
+        }
+    }
+
+    window.addEventListener('online', () => {
+        document.getElementById('offline-msg').style.display = 'none';
+        sincronizar();
+    });
+    window.addEventListener('offline', () => {
+        document.getElementById('offline-msg').style.display = 'block';
+    });
+</script>
+</body>
+</html>
