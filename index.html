@@ -135,7 +135,7 @@
 <script src="https://unpkg.com/dexie@3.2.0/dist/dexie.min.js"></script>
 <script>
     // Inicializar DB Local
-    const db = new Dexie('HuarmeyF_2026');
+    const db = new Dexie('HuarmeyFX_2026');
     db.version(1).stores({ registros: '++id, estado' });
 
    async function sincronizar() {
@@ -210,7 +210,7 @@
             conoce: document.getElementById('conoce').value,
             referencias: document.getElementById('referencias').value,
             tipoTrabajo: document.getElementById('tipoTrabajo').value,
-            tipoTrabajo: document.getElementById('modo').value,
+            modo: document.getElementById('modo').value,
             experiencia: document.getElementById('experiencia').value,
             dep: document.getElementById('dep').value,
             prov: document.getElementById('prov').value,
@@ -230,19 +230,30 @@
 
     async function sincronizar() {
     if (!navigator.onLine) return;
+    
     const pends = await db.registros.where('estado').equals('P').toArray();
+    
     for (let r of pends) {
         try {
-            await fetch('https://script.google.com/macros/s/AKfycbwGzmZmKfHVd3o6UqJ9DCdmtjmbFVJX_HZJr1HvxJl6HrF-ifS0pYo6-7LRY7jdTOkfEg/exec', { // Pega aquí la URL /exec
+            // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT
+            const urlApp = 'https://script.google.com/macros/s/AKfycbwMk58IsL8vagun81mbNmexLFiFuxJFSaKq12Kj4pUAbZTGnLdv_3vzU7T0xcAe2Nd2/exec';
+
+            await fetch(urlApp, {
                 method: 'POST',
-                mode: 'no-cors', 
+                mode: 'no-cors', // ESTO ES VITAL para evitar errores de seguridad
                 body: JSON.stringify(r),
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'Content-Type': 'text/plain' // Usamos text/plain para evitar el pre-vuelo de CORS
+                }
             });
-            // Al usar no-cors, si no hay error de red, marcamos como enviado
+
+            // Con no-cors no podemos leer la respuesta, pero si no hay error de red
+            // marcamos como enviado ('E')
             await db.registros.update(r.id, { estado: 'E' });
-        } catch (e) { 
-            console.error("Error al sincronizar DNI " + r.dni, e); 
+            console.log("DNI " + r.dni + " enviado con éxito.");
+
+        } catch (error) {
+            console.error("Error al enviar:", error);
         }
     }
 }
