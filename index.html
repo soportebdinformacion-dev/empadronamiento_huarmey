@@ -132,25 +132,33 @@
     const db = new Dexie('HuarmeyDB_2026');
     db.version(1).stores({ registros: '++id, estado' });
 
-    async function sincronizar() {
-    if (!navigator.onLine) return; // Solo intenta si hay internet
+   async function sincronizar() {
+    if (!navigator.onLine) return;
     
-    // Obtenemos los registros pendientes de IndexedDB
-    const pends = await db.registros.where('estado').equals('Pendiente').toArray();
+    // Obtenemos registros con estado 'P' (Pendiente)
+    const pends = await db.registros.where('estado').equals('P').toArray();
     
     for (let r of pends) {
         try {
-            const res = await fetch('https://script.google.com/macros/s/AKfycbyXW-h9qFmP_dZ-Ze4QR6SXD9T0mMmhEaQtXDTVDsJAPamzMl-ixu-RRQni_riSykbdFg/exec', { // <--- PEGA TU URL AQUÍ
+            // Reemplaza con tu URL real de implementación
+            const URL_WEB_APP = 'https://script.google.com/macros/s/AKfycbyXW-h9qFmP_dZ-Ze4QR6SXD9T0mMmhEaQtXDTVDsJAPamzMl-ixu-RRQni_riSykbdFg/exec'; 
+
+            await fetch(URL_WEB_APP, {
                 method: 'POST',
-                mode: 'no-cors', // Evita problemas de seguridad (CORS) con Google Apps Script
-                body: JSON.stringify(r)
+                mode: 'no-cors', // Necesario para Google Apps Script desde el navegador
+                body: JSON.stringify(r),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
+
+            // Como usamos no-cors, no podemos leer la respuesta, 
+            // pero si no salta al catch, asumimos éxito y actualizamos a 'E' (Enviado)
+            await db.registros.update(r.id, { estado: 'E' });
+            console.log("Registro sincronizado para DNI: " + r.dni);
             
-            // Si la petición se envió (aunque sea no-cors), marcamos como sincronizado
-            await db.registros.update(r.id, { estado: 'Sincronizado' });
-            console.log("Sincronizado: " + r.dni);
-        } catch (err) {
-            console.error("Error de conexión:", err);
+        } catch (error) {
+            console.error("Fallo al sincronizar:", error);
         }
     }
 }
