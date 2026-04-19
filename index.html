@@ -132,6 +132,29 @@
     const db = new Dexie('HuarmeyDB_2026');
     db.version(1).stores({ registros: '++id, estado' });
 
+    async function sincronizar() {
+    if (!navigator.onLine) return; // Solo intenta si hay internet
+    
+    // Obtenemos los registros pendientes de IndexedDB
+    const pends = await db.registros.where('estado').equals('Pendiente').toArray();
+    
+    for (let r of pends) {
+        try {
+            const res = await fetch('https://script.google.com/macros/s/AKfycbyXW-h9qFmP_dZ-Ze4QR6SXD9T0mMmhEaQtXDTVDsJAPamzMl-ixu-RRQni_riSykbdFg/exec', { // <--- PEGA TU URL AQUÍ
+                method: 'POST',
+                mode: 'no-cors', // Evita problemas de seguridad (CORS) con Google Apps Script
+                body: JSON.stringify(r)
+            });
+            
+            // Si la petición se envió (aunque sea no-cors), marcamos como sincronizado
+            await db.registros.update(r.id, { estado: 'Sincronizado' });
+            console.log("Sincronizado: " + r.dni);
+        } catch (err) {
+            console.error("Error de conexión:", err);
+        }
+    }
+}
+
     function calcularEdad(fecha) {
         if(!fecha) return;
         const hoy = new Date();
