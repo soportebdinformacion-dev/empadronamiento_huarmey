@@ -86,15 +86,16 @@
             </select>
         </section>
 
-        <label>Referencias de la empresa (Puedes marcar varias):</label>
-<div style="display: grid; grid-template-columns: 1fr; gap: 8px; background: #fdf2f2; padding: 12px; border-radius: 10px; border: 1px solid #ffcdd2; margin-top: 5px;">
-    <label style="font-weight:normal; font-size:14px; margin:0;"><input type="checkbox" name="ref_empresa" value="Buenos pagos"> Buenos pagos</label>
-    <label style="font-weight:normal; font-size:14px; margin:0;"><input type="checkbox" name="ref_empresa" value="Buen trato al personal"> Buen trato al personal</label>
-    <label style="font-weight:normal; font-size:14px; margin:0;"><input type="checkbox" name="ref_empresa" value="Buenos bonos"> Buenos bonos</label>
-    <label style="font-weight:normal; font-size:14px; margin:0;"><input type="checkbox" name="ref_empresa" value="Buenos sorteos"> Buenos sorteos</label>
-    <label style="font-weight:normal; font-size:14px; margin:0;"><input type="checkbox" name="ref_empresa" value="Buenas instalaciones de campamento"> Buenas instalaciones de campamento</label>
-    <label style="font-weight:normal; font-size:14px; margin:0;"><input type="checkbox" name="ref_empresa" value="Sin opinar"> Sin opinar</label>
-</div>
+        <label>Referencias de la empresa:</label>
+        <select id="referencias" required>
+    <option value="">Seleccione una referencia...</option>
+    <option value="Buenos pagos">Buenos pagos</option>
+    <option value="Buen trato al personal">Buen trato al personal</option>
+    <option value="Buenos bonos">Buenos bonos</option>
+    <option value="Buenos sorteos">Buenos sorteos</option>
+    <option value="Buenas instalaciones de campamento">Buenas instalaciones de campamento</option>
+    <option value="Sin opinar">Sin opinar</option>
+    </select>
 
         <section>
             <legend>2. Información Laboral</legend>
@@ -115,22 +116,25 @@
         </section>
 
         <section>
-            <legend>3. Residencia y Disponibilidad</legend>
-            <input type="text" id="dep" placeholder="Departamento" required>
-            <input type="text" id="prov" placeholder="Provincia" required>
-            <input type="text" id="dist" placeholder="Distrito" required>
+    <legend>3. RESIDENCIA Y DISPONIBILIDAD</legend>
+    <input type="text" id="dep" placeholder="Departamento" required>
+    <input type="text" id="prov" placeholder="Provincia" required>
+    <input type="text" id="dist" placeholder="Distrito" required>
+    
+    <label>Lugar de Residencia (Zona):</label>
+    <input type="text" id="lugar_residencia" placeholder="Ej: Caserío San José" required>
 
-            <label>Disponibilidad</label>
-            <select id="disponibilidad" required onchange="toggleFechaIngreso(this.value)">
-                <option value="Inmediato">Inmediato</option>
-                <option value="Ingresaré en otra fecha">Ingresaré en otra fecha</option>
-            </select>
+    <label>Disponibilidad:</label>
+    <select id="disponibilidad" required onchange="toggleFechaIngreso(this.value)">
+        <option value="Inmediato">Inmediato</option>
+        <option value="Ingresaré en otra fecha">Ingresaré en otra fecha</option>
+    </select>
 
-            <div id="divFechaIngreso" class="hidden">
-                <label>Fecha de Ingreso</label>
-                <input type="date" id="fechaIngreso">
-            </div>
-        </section>
+    <div id="divFechaIngreso" style="display: none; margin-top: 10px;">
+        <label>¿En qué fecha ingresará?</label>
+        <input type="date" id="fechaIngreso">
+    </div>
+</section>
 
         <button type="submit" class="btn-submit">FINALIZAR REGISTRO</button>
     </form>
@@ -151,6 +155,20 @@
         document.getElementById('edad').value = age + " años";
     }
 
+    function toggleFechaIngreso(valor) {
+    const contenedorFecha = document.getElementById('divFechaIngreso');
+    const inputFecha = document.getElementById('fechaIngreso');
+    
+    if (valor === "Ingresaré en otra fecha") {
+        contenedorFecha.style.display = 'block';
+        inputFecha.required = true;
+    } else {
+        contenedorFecha.style.display = 'none';
+        inputFecha.required = false;
+        inputFecha.value = ""; // Limpia el valor si cambia a Inmediato
+    }
+}
+
     function toggleFechaIngreso(val) {
         const div = document.getElementById('divFechaIngreso');
         const input = document.getElementById('fechaIngreso');
@@ -163,7 +181,7 @@
         }
     }
 
-    // Guardado y Sincronización
+        // Guardado y Sincronización
     document.getElementById('formHuarmey').onsubmit = async (e) => {
         e.preventDefault();
 
@@ -196,15 +214,15 @@ const registro = {
             conoce: document.getElementById('conoce').value,
             tipoTrabajo: document.getElementById('tipoTrabajo').value,
             experiencia: document.getElementById('experiencia').value,
-            dep: document.getElementById('dep').value,
-            prov: document.getElementById('prov').value,
-            dist: document.getElementById('dist').value,
-            zona: document.getElementById('zona').value,
-            disponibilidad: document.getElementById('disponibilidad').value === "Inmediato" 
-                ? "Inmediato" 
-                : "Fecha: " + document.getElementById('fechaIngreso').value,
-            estado: 'Pendiente'
-        };
+            referencias: document.getElementById('referencias').value, // Captura del desplegable
+    dep: document.getElementById('dep').value,
+    prov: document.getElementById('prov').value,
+    dist: document.getElementById('dist').value,
+    lugar_residencia: document.getElementById('lugar_residencia').value, // Nuevo campo
+    disponibilidad: document.getElementById('disponibilidad').value,
+    fecha_especifica: document.getElementById('fechaIngreso').value || "N/A",
+    estado: 'P'
+};
 
         await db.registros.add(registro);
         alert("✅ Registro guardado. Se enviará cuando haya internet.");
