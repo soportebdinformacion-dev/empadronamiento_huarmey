@@ -3,181 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empadronamiento Huarmey 2026</title>
+    <title>Agrícola Huarmey - Registro 2026</title>
+    <link rel="manifest" href="manifest.json">
     <style>
-        :root { --rojo: #C62828; --verde: #2E7D32; --gris: #f4f4f4; }
-        body { font-family: 'Roboto', sans-serif; background: var(--gris); margin: 0; padding: 15px; }
-        .card { background: white; max-width: 500px; margin: auto; padding: 25px; border-radius: 20px; border-top: 10px solid var(--rojo); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .logo { display: block; margin: 0 auto 20px; max-width: 180px; }
-        h2 { text-align: center; color: var(--verde); font-size: 20px; margin-bottom: 25px; }
-        section { margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 10px; }
-        legend { font-weight: bold; color: var(--rojo); font-size: 14px; padding: 0 10px; }
-        label { display: block; margin-top: 10px; font-size: 13px; font-weight: 600; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .btn { background: var(--verde); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 20px; cursor: pointer; }
-        .btn:active { transform: scale(0.95); }
-        .offline-notice { background: #ffebee; color: #c62828; text-align: center; padding: 10px; border-radius: 8px; font-size: 12px; display: none; }
+        :root { --rojo-agricola: #C62828; --verde-campo: #2E7D32; --blanco: #ffffff; --gris-claro: #f8f9fa; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--gris-claro); margin: 0; padding: 10px; }
+        .container { max-width: 600px; margin: auto; background: var(--blanco); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: var(--rojo-agricola); color: white; text-align: center; padding: 20px; }
+        .logo { max-width: 150px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        form { padding: 20px; }
+        section { margin-bottom: 25px; border: 1px solid #eee; padding: 15px; border-radius: 10px; }
+        legend { font-weight: bold; color: var(--rojo-agricola); text-transform: uppercase; font-size: 0.9em; }
+        label { display: block; margin-top: 12px; font-weight: 600; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .btn-submit { background: var(--verde-campo); color: white; border: none; width: 100%; padding: 18px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-submit:active { transform: scale(0.98); background: #1b5e20; }
+        .status-bar { padding: 10px; text-align: center; font-weight: bold; font-size: 12px; display: none; }
+        .offline { background: #ffcdd2; color: #b71c1c; display: block; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <img src="ICONO HUARMEY.png" class="logo">
-    <h2>Campaña Agrícola 2026</h2>
-    <div id="offline-msg" class="offline-notice">⚠️ Modo Offline: Los datos se guardarán localmente</div>
+<div class="container">
+    <div class="header">
+        <img src="ICONO HUARMEY.png" alt="Logo Huarmey" class="logo">
+        <h1 style="font-size: 1.4em; margin: 10px 0;">Campaña Agrícola 2026</h1>
+    </div>
 
-    <form id="formEmpadronamiento">
+    <div id="connection-status" class="status-bar"></div>
+
+    <form id="formHuarmey">
         <section>
-            <legend>1. INFORMACIÓN PERSONAL</legend>
-            <label>Tipo de Registro:</label>
+            <legend>1. Información Personal</legend>
+            <label>Tipo de Registro</label>
             <select id="tipoReg" required>
-                <option value="Independiente">Registro Independiente</option>
+                <option value="Registro independiente">Registro independiente</option>
                 <option value="JOSE CHAVEZ">JOSE CHAVEZ</option>
                 <option value="RIVALDO VALLES">RIVALDO VALLES</option>
                 <option value="ALEX RUFASTO">ALEX RUFASTO</option>
+                <option value="OSCAR BARREDA">OSCAR BARREDA</option>
+                <option value="PILAR MONJA">PILAR MONJA</option>
+                <option value="ELESTER CHINCHAY">ELESTER CHINCHAY</option>
             </select>
 
-            <label>DNI (8 dígitos):</label>
-            <input type="number" id="dni" required pattern="\d{8}" oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);">
+            <label>DNI (8 dígitos)</label>
+            <input type="text" id="dni" inputmode="numeric" maxlength="8" pattern="\d{8}" required placeholder="Ingrese DNI">
 
-            <label>Apellidos y Nombres:</label>
-            <input type="text" id="apellidos" required>
+            <label>Apellidos y Nombres</label>
+            <input type="text" id="apellidos" required placeholder="Nombre completo">
 
-            <label>Fecha de Nacimiento:</label>
-            <input type="date" id="nacimiento" required onchange="calcularEdad(this.value)">
+            <label>Fecha de Nacimiento</label>
+            <input type="date" id="nacimiento" required onchange="updateAge(this.value)">
 
-            <label>Edad:</label>
-            <input type="text" id="edad" readonly style="background:#eee">
+            <label>Edad (Calculada)</label>
+            <input type="text" id="edad" readonly style="background: #f0f0f0;">
 
-            <label>N° de Hijos:</label>
-            <input type="number" id="hijos" required min="0">
+            <label>N° de Hijos</label>
+            <input type="number" id="hijos" min="0" required>
 
-            <label>Celular / WhatsApp (9 dígitos):</label>
-            <div style="display:flex; gap:5px">
-                <input type="number" id="celular" placeholder="Celular" required>
-                <input type="number" id="whatsapp" placeholder="WhatsApp" required>
+            <div style="display:flex; gap:10px">
+                <div style="flex:1">
+                    <label>Celular</label>
+                    <input type="text" id="celular" inputmode="numeric" maxlength="9" pattern="\d{9}" required>
+                </div>
+                <div style="flex:1">
+                    <label>WhatsApp</label>
+                    <input type="text" id="whatsapp" inputmode="numeric" maxlength="9" pattern="\d{9}" required>
+                </div>
             </div>
+
+            <label>¿Cómo conociste la empresa?</label>
+            <select id="conoce" required>
+                <option value="Facebook">Facebook</option>
+                <option value="Amigo">Amigo</option>
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="Líder">Líder</option>
+                <option value="Reclutador">Reclutador</option>
+                <option value="Otros">Otros</option>
+            </select>
         </section>
 
         <section>
-    <legend>1. INFORMACIÓN PERSONAL</legend>
-    <label>Celular / WhatsApp (9 dígitos):</label>
-    <div style="display:flex; gap:5px">
-        <input type="number" id="celular" placeholder="Celular" required>
-        <input type="number" id="whatsapp" placeholder="WhatsApp" required>
-    </div>
-
-    <label>¿Cómo conociste la empresa?</label>
-    <select id="conoce" required>
-        <option value="">Seleccione una opción...</option>
-        <option value="Facebook">Facebook</option>
-        <option value="Amigo">Amigo</option>
-        <option value="WhatsApp">WhatsApp</option>
-        <option value="Líder">Líder</option>
-        <option value="Reclutador">Reclutador</option>
-        <option value="Otros">Otros</option>
-    </select>
-
-    <label>Buenas referencias:</label>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 5px;">
-        <label style="font-weight:normal;"><input type="checkbox" name="ref" value="Buenos pagos"> Buenos pagos</label>
-        <label style="font-weight:normal;"><input type="checkbox" name="ref" value="Buen trato"> Buen trato</label>
-        <label style="font-weight:normal;"><input type="checkbox" name="ref" value="Buenos bonos"> Buenos bonos</label>
-        <label style="font-weight:normal;"><input type="checkbox" name="ref" value="Buenos frutos"> Buenos frutos</label>
-        <label style="font-weight:normal;"><input type="checkbox" name="ref" value="Ninguno" id="refNinguno"> Ninguno</label>
-    </div>
-</section>
-
-        <section>
-            <legend>2. LABORAL Y RESIDENCIA</legend>
-            <label>Experiencia:</label>
-            <select id="experiencia">
-                <option value="Ninguno">Ninguno</option>
-                <option value="Cosecha Arándanos">Cosecha arándanos</option>
-                <option value="Operario Packing">Operario packing</option>
-                <option value="Conductor">Conductor AI-II-III</option>
+            <legend>2. Información Laboral</legend>
+            <label>Tipo de Trabajo</label>
+            <select id="tipoTrabajo" required>
+                <option value="Campo">Campo</option>
+                <option value="Packing">Packing</option>
             </select>
 
-            <label>Departamento / Provincia / Distrito:</label>
+            <label>Experiencia Laboral</label>
+            <select id="experiencia" required>
+                <option value="Ninguno">Ninguno</option>
+                <option value="Líder de zona + cosechador">Líder de zona + cosechador</option>
+                <option value="Cosecha arándanos jornal">Cosecha arándanos jornal</option>
+                <option value="Operario packing jornal">Operario packing jornal</option>
+                <option value="Conductor AI-II-III">Conductor AI-II-III</option>
+            </select>
+        </section>
+
+        <section>
+            <legend>3. Residencia y Disponibilidad</legend>
             <input type="text" id="dep" placeholder="Departamento" required>
             <input type="text" id="prov" placeholder="Provincia" required>
             <input type="text" id="dist" placeholder="Distrito" required>
+
+            <label>Disponibilidad</label>
+            <select id="disponibilidad" required onchange="toggleFechaIngreso(this.value)">
+                <option value="Inmediato">Inmediato</option>
+                <option value="Ingresaré en otra fecha">Ingresaré en otra fecha</option>
+            </select>
+
+            <div id="divFechaIngreso" class="hidden">
+                <label>Fecha de Ingreso</label>
+                <input type="date" id="fechaIngreso">
+            </div>
         </section>
 
-        <button type="submit" class="btn">REGISTRAR PERSONAL</button>
+        <button type="submit" class="btn-submit">FINALIZAR REGISTRO</button>
     </form>
 </div>
 
 <script src="https://unpkg.com/dexie@3.2.0/dist/dexie.min.js"></script>
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyXW-h9qFmP_dZ-Ze4QR6SXD9T0mMmhEaQtXDTVDsJAPamzMl-ixu-RRQni_riSykbdFg/exec';
+    // Configuración Base de Datos
     const db = new Dexie('HuarmeyDB_2026');
     db.version(1).stores({ registros: '++id, estado' });
 
-    function calcularEdad(fecha) {
-        const hoy = new Date();
-        const cumple = new Date(fecha);
-        let edad = hoy.getFullYear() - cumple.getFullYear();
-        document.getElementById('edad').value = edad + " años";
+    const API_URL = 'TU_URL_DE_GOOGLE_APPS_SCRIPT';
+
+    function updateAge(birthDate) {
+        if (!birthDate) return;
+        const diff = Date.now() - new Date(birthDate).getTime();
+        const age = new Date(diff).getUTCFullYear() - 1970;
+        document.getElementById('edad').value = age + " años";
     }
 
-    document.getElementById('formEmpadronamiento').onsubmit = async (e) => {
-    e.preventDefault();
-    
-    // Captura las referencias marcadas y las une con comas
-    const refs = Array.from(document.querySelectorAll('input[name="ref"]:checked'))
-                      .map(cb => cb.value)
-                      .join(", ");
-
-    const registro = {
-        fecha: new Date().toLocaleString('es-PE'),
-        tipoReg: document.getElementById('tipoReg').value,
-        dni: document.getElementById('dni').value,
-        apellidos: document.getElementById('apellidos').value,
-        nacimiento: document.getElementById('nacimiento').value,
-        edad: document.getElementById('edad').value,
-        hijos: document.getElementById('hijos').value,
-        celular: document.getElementById('celular').value,
-        whatsapp: document.getElementById('whatsapp').value,
-        conoce: document.getElementById('conoce').value,      // NUEVO
-        referencias: refs || "Ninguna",                      // NUEVO
-        tipoTrabajo: document.getElementById('tipoTrabajo').value,
-        experiencia: document.getElementById('experiencia').value,
-        dep: document.getElementById('dep').value,
-        prov: document.getElementById('prov').value,
-        dist: document.getElementById('dist').value,
-        residencia: document.getElementById('residencia').value,
-        disponibilidad: document.getElementById('disponibilidad').value,
-        estado: 'P'
-    };
-    
-    await db.registros.add(registro);
-    alert("✅ Guardado localmente. Se sincronizará al detectar internet.");
-    e.target.reset();
-    if (navigator.onLine) sincronizar();
-};
-
-    async function sincronizar() {
-        if (!navigator.onLine) return;
-        const pends = await db.registros.where('estado').equals('P').toArray();
-        for (let r of pends) {
-            try {
-                const res = await fetch('TU_URL_EXEC', {
-                    method: 'POST',
-                    body: JSON.stringify(r)
-                });
-                if (res.ok) await db.registros.update(r.id, { estado: 'E' });
-            } catch (e) { console.error(e); }
+    function toggleFechaIngreso(val) {
+        const div = document.getElementById('divFechaIngreso');
+        const input = document.getElementById('fechaIngreso');
+        if (val === "Ingresaré en otra fecha") {
+            div.classList.remove('hidden');
+            input.setAttribute('required', 'true');
+        } else {
+            div.classList.add('hidden');
+            input.removeAttribute('required');
         }
     }
 
+    // Guardado y Sincronización
+    document.getElementById('formHuarmey').onsubmit = async (e) => {
+        e.preventDefault();
+        
+        const registro = {
+            fecha: new Date().toLocaleString('es-PE'),
+            tipoReg: document.getElementById('tipoReg').value,
+            dni: document.getElementById('dni').value,
+            apellidos: document.getElementById('apellidos').value,
+            nacimiento: document.getElementById('nacimiento').value,
+            edad: document.getElementById('edad').value,
+            hijos: document.getElementById('hijos').value,
+            celular: document.getElementById('celular').value,
+            whatsapp: document.getElementById('whatsapp').value,
+            conoce: document.getElementById('conoce').value,
+            tipoTrabajo: document.getElementById('tipoTrabajo').value,
+            experiencia: document.getElementById('experiencia').value,
+            dep: document.getElementById('dep').value,
+            prov: document.getElementById('prov').value,
+            dist: document.getElementById('dist').value,
+            disponibilidad: document.getElementById('disponibilidad').value === "Inmediato" 
+                ? "Inmediato" 
+                : "Fecha: " + document.getElementById('fechaIngreso').value,
+            estado: 'Pendiente'
+        };
+
+        await db.registros.add(registro);
+        alert("✅ Registro guardado. Se enviará cuando haya internet.");
+        e.target.reset();
+        document.getElementById('divFechaIngreso').classList.add('hidden');
+        syncData();
+    };
+
+    async function syncData() {
+        if (!navigator.onLine) return;
+        const pending = await db.registros.where('estado').equals('Pendiente').toArray();
+        
+        for (let item of pending) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Importante para Google Apps Script
+                    body: JSON.stringify(item)
+                });
+                await db.registros.update(item.id, { estado: 'Sincronizado' });
+            } catch (err) {
+                console.error("Error de sincronización", err);
+            }
+        }
+    }
+
+    // Monitoreo de conexión
     window.addEventListener('online', () => {
-        document.getElementById('offline-msg').style.display = 'none';
-        sincronizar();
+        document.getElementById('connection-status').classList.remove('offline');
+        syncData();
     });
     window.addEventListener('offline', () => {
-        document.getElementById('offline-msg').style.display = 'block';
+        const bar = document.getElementById('connection-status');
+        bar.textContent = "⚠️ MODO OFFLINE ACTIVADO";
+        bar.classList.add('offline');
     });
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js');
+    }
 </script>
 </body>
 </html>
