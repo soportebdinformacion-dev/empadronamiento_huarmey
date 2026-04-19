@@ -92,6 +92,12 @@
                 <option value="Packing">Packing</option>
             </select>
 
+            <label>Modalidad:</label>
+            <select id="Modo" required>
+                <option value="Ida y vuelta">Ida y vuelta</option>
+                <option value="Campamento">Campamento</option>
+                </select>
+
             <label>Experiencia:</label>
             <select id="experiencia" required>
                 <option value="Ninguno">Ninguno</option>
@@ -201,6 +207,7 @@
             conoce: document.getElementById('conoce').value,
             referencias: document.getElementById('referencias').value,
             tipoTrabajo: document.getElementById('tipoTrabajo').value,
+            tipoTrabajo: document.getElementById('Modo').value,
             experiencia: document.getElementById('experiencia').value,
             dep: document.getElementById('dep').value,
             prov: document.getElementById('prov').value,
