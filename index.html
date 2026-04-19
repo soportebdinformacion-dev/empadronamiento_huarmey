@@ -164,6 +164,22 @@
     // Guardado y Sincronización
     document.getElementById('formHuarmey').onsubmit = async (e) => {
         e.preventDefault();
+
+        // Dentro de document.getElementById('formHuarmey').onsubmit:
+
+// 1. Captura las referencias marcadas
+const referenciasSeleccionadas = Array.from(document.querySelectorAll('input[name="ref_empresa"]:checked'))
+                                     .map(cb => cb.value)
+                                     .join(", ");
+
+// 2. Agrega el campo al objeto 'registro'
+const registro = {
+    // ... otros campos existentes ...
+    conoce: document.getElementById('conoce').value,
+    referencias: referenciasSeleccionadas || "Sin especificar", // Nuevo campo
+    tipoTrabajo: document.getElementById('tipoTrabajo').value,
+    // ... resto del objeto ...
+};
         
         const registro = {
             fecha: new Date().toLocaleString('es-PE'),
