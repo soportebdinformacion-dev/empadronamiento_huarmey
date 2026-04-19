@@ -55,7 +55,7 @@
             <label>Apellidos y Nombres</label>
             <input type="text" id="apellidos" required placeholder="Nombre completo">
 
-           <label>Fecha de Nacimiento:</label>
+         <label>Fecha de Nacimiento:</label>
         <input type="date" id="nacimiento" required onchange="updateAge(this.value)">
 
            <label>Edad:</label>
@@ -152,16 +152,20 @@ function updateAge(fecha) {
     const hoy = new Date();
     const cumple = new Date(fecha);
     
+    // Cálculo básico de años
     let edad = hoy.getFullYear() - cumple.getFullYear();
     const mes = hoy.getMonth() - cumple.getMonth();
     
-    // Ajuste por si aún no ha cumplido años en el mes actual
+    // Ajuste preciso: si aún no ha llegado el mes o el día del cumpleaños
     if (mes < 0 || (mes === 0 && hoy.getDate() < cumple.getDate())) {
         edad--;
     }
     
-    // IMPORTANTE: El ID debe ser 'edad' para que coincida con tu input
-    document.getElementById('edad').value = edad + " años";
+    // Escribe el resultado en el campo con id="edad"
+    const campoEdad = document.getElementById('edad');
+    if (campoEdad) {
+        campoEdad.value = edad + " años";
+    }
 }
 
         // Guardado y Sincronización
