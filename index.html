@@ -3,40 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agrícola Huarmey - Registro 2026</title>
-    <link rel="manifest" href="manifest.json">
+    <title>Empadronamiento Huarmey 2026</title>
     <style>
-        :root { --rojo-agricola: #C62828; --verde-campo: #2E7D32; --blanco: #ffffff; --gris-claro: #f8f9fa; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--gris-claro); margin: 0; padding: 10px; }
-        .container { max-width: 600px; margin: auto; background: var(--blanco); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: var(--rojo-agricola); color: white; text-align: center; padding: 20px; }
-        .logo { max-width: 150px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-        form { padding: 20px; }
-        section { margin-bottom: 25px; border: 1px solid #eee; padding: 15px; border-radius: 10px; }
-        legend { font-weight: bold; color: var(--rojo-agricola); text-transform: uppercase; font-size: 0.9em; }
-        label { display: block; margin-top: 12px; font-weight: 600; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        .btn-submit { background: var(--verde-campo); color: white; border: none; width: 100%; padding: 18px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        .btn-submit:active { transform: scale(0.98); background: #1b5e20; }
-        .status-bar { padding: 10px; text-align: center; font-weight: bold; font-size: 12px; display: none; }
-        .offline { background: #ffcdd2; color: #b71c1c; display: block; }
+        :root { --rojo: #C62828; --verde: #2E7D32; --gris: #f4f4f4; --blanco: #ffffff; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--gris); margin: 0; padding: 10px; }
+        .card { background: var(--blanco); max-width: 550px; margin: auto; padding: 20px; border-radius: 15px; border-top: 8px solid var(--rojo); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .logo { display: block; margin: 0 auto 15px; max-width: 160px; }
+        h2 { text-align: center; color: var(--verde); font-size: 1.2rem; margin-bottom: 20px; }
+        section { margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 12px; }
+        legend { font-weight: bold; color: var(--rojo); font-size: 0.9rem; text-transform: uppercase; }
+        label { display: block; margin-top: 12px; font-size: 0.85rem; font-weight: 600; color: #444; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1.5px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        input:focus { border-color: var(--verde); outline: none; }
+        .btn { background: var(--verde); color: white; border: none; width: 100%; padding: 16px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; margin-top: 25px; cursor: pointer; transition: 0.3s; }
+        .offline-notice { background: #FFEBEE; color: #C62828; text-align: center; padding: 8px; border-radius: 5px; font-size: 0.8rem; display: none; margin-bottom: 10px; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <img src="ICONO HUARMEY.png" alt="Logo Huarmey" class="logo">
-        <h1 style="font-size: 1.4em; margin: 10px 0;">Campaña Agrícola 2026</h1>
-    </div>
+<div class="card">
+    <img src="ICONO HUARMEY.png" class="logo" alt="Agrícola Huarmey">
+    <h2>Campaña Agrícola 2026</h2>
+    <div id="offline-msg" class="offline-notice">⚠️ Estás trabajando sin conexión. Los datos se sincronizarán después.</div>
 
-    <div id="connection-status" class="status-bar"></div>
-
-    <form id="formHuarmey">
+    <form id="formEmpadronamiento">
         <section>
             <legend>1. Información Personal</legend>
-            <label>Tipo de Registro</label>
+            
+            <label>Tipo de Registro:</label>
             <select id="tipoReg" required>
                 <option value="Registro independiente">Registro independiente</option>
                 <option value="JOSE CHAVEZ">JOSE CHAVEZ</option>
@@ -45,34 +40,27 @@
                 <option value="OSCAR BARREDA">OSCAR BARREDA</option>
                 <option value="PILAR MONJA">PILAR MONJA</option>
                 <option value="ELESTER CHINCHAY">ELESTER CHINCHAY</option>
-                <option value="FELIPE CHINCHAY">FELIPE CHINCHAY</option>
-                
             </select>
 
-            <label>DNI (8 dígitos)</label>
-            <input type="text" id="dni" inputmode="numeric" maxlength="8" pattern="\d{8}" required placeholder="Ingrese DNI">
+            <label>DNI (8 dígitos):</label>
+            <input type="number" id="dni" required minlength="8" maxlength="8" oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);">
 
-            <label>Apellidos y Nombres</label>
-            <input type="text" id="apellidos" required placeholder="Nombre completo">
+            <label>Apellidos y Nombres:</label>
+            <input type="text" id="apellidos" required placeholder="Ej: Perez Garcia, Juan">
 
-         <label>Fecha de Nacimiento:</label>
-        <input type="date" id="nacimiento" required onchange="updateAge(this.value)">
+            <label>Fecha de Nacimiento:</label>
+            <input type="date" id="nacimiento" required onchange="calcularEdad(this.value)">
 
-           <label>Edad:</label>
-        <input type="text" id="edad" readonly style="background:#eee">
+            <label>Edad:</label>
+            <input type="text" id="edad" readonly style="background:#f0f0f0" placeholder="Calculado automáticamente">
 
-            <label>N° de Hijos</label>
-            <input type="number" id="hijos" min="0" required>
+            <label>N° de Hijos:</label>
+            <input type="number" id="hijos" required min="0" value="0">
 
+            <label>Celular / WhatsApp (9 dígitos):</label>
             <div style="display:flex; gap:10px">
-                <div style="flex:1">
-                    <label>Celular</label>
-                    <input type="text" id="celular" inputmode="numeric" maxlength="9" pattern="\d{9}" required>
-                </div>
-                <div style="flex:1">
-                    <label>WhatsApp</label>
-                    <input type="text" id="whatsapp" inputmode="numeric" maxlength="9" pattern="\d{9}" required>
-                </div>
+                <input type="number" id="celular" placeholder="Celular" required oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);">
+                <input type="number" id="whatsapp" placeholder="WhatsApp" required oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);">
             </div>
 
             <label>¿Cómo conociste la empresa?</label>
@@ -84,109 +72,89 @@
                 <option value="Reclutador">Reclutador</option>
                 <option value="Otros">Otros</option>
             </select>
+
+            <label>Referencias de la empresa:</label>
+            <select id="referencias" required>
+                <option value="Buenos pagos">Buenos pagos</option>
+                <option value="Buen trato al personal">Buen trato al personal</option>
+                <option value="Buenos bonos">Buenos bonos</option>
+                <option value="Buenos sorteos">Buenos sorteos</option>
+                <option value="Sin opinar">Sin opinar</option>
+            </select>
         </section>
 
-        <label>Referencias de la empresa:</label>
-        <select id="referencias" required>
-    <option value="">Seleccione una referencia...</option>
-    <option value="Buenos pagos">Buenos pagos</option>
-    <option value="Buen trato al personal">Buen trato al personal</option>
-    <option value="Buenos bonos">Buenos bonos</option>
-    <option value="Buenos sorteos">Buenos sorteos</option>
-    <option value="Buenas instalaciones de campamento">Buenas instalaciones de campamento</option>
-    <option value="Sin opinar">Sin opinar</option>
-    </select>
-
         <section>
-            <legend>2. Información Laboral</legend>
-            <label>Tipo de Trabajo</label>
+            <legend>2. Laboral y Residencia</legend>
+            
+            <label>Tipo de trabajo:</label>
             <select id="tipoTrabajo" required>
                 <option value="Campo">Campo</option>
                 <option value="Packing">Packing</option>
             </select>
 
-            <label>Experiencia Laboral</label>
+            <label>Experiencia:</label>
             <select id="experiencia" required>
                 <option value="Ninguno">Ninguno</option>
                 <option value="Líder de zona + cosechador">Líder de zona + cosechador</option>
                 <option value="Cosecha arándanos jornal">Cosecha arándanos jornal</option>
                 <option value="Operario packing jornal">Operario packing jornal</option>
                 <option value="Conductor AI-II-III">Conductor AI-II-III</option>
-            </select>
+                </select>
+
+            <label>Ubicación (Dep / Prov / Dist):</label>
+            <input type="text" id="dep" placeholder="Departamento" required>
+            <input type="text" id="prov" placeholder="Provincia" required>
+            <input type="text" id="dist" placeholder="Distrito" required>
         </section>
 
         <section>
-    <legend>3. RESIDENCIA Y DISPONIBILIDAD</legend>
-    <input type="text" id="dep" placeholder="DEPARTAMENTO" required>
-    <input type="text" id="prov" placeholder="PROVINCIA" required>
-    <input type="text" id="dist" placeholder="OLMOS" required>
-    <input type="text" id="lugar_residencia" placeholder="ZONA Ej. Alan García" required>
+            <legend>3. Confirmación</legend>
+            <label>Disponibilidad:</label>
+            <select id="disponibilidad" required onchange="toggleFechaIngreso(this.value)">
+                <option value="Inmediato">Inmediato</option>
+                <option value="Ingresaré en otra fecha">Ingresaré en otra fecha</option>
+            </select>
 
-    <label>Disponibilidad:</label>
-    <select id="disponibilidad" required onchange="toggleFechaIngreso(this.value)">
-        <option value="Inmediato">Inmediato</option>
-        <option value="Ingresaré en otra fecha">Ingresaré en otra fecha</option>
-    </select>
+            <div id="divFechaIngreso" class="hidden">
+                <label>Fecha de Ingreso:</label>
+                <input type="date" id="fechaIngreso">
+            </div>
+        </section>
 
-    <div id="divFechaIngreso" style="display: none; margin-top: 10px;">
-        <label>¿En qué fecha ingresará?</label>
-        <input type="date" id="fechaIngreso">
-    </div>
-</section>
-
-        <button type="submit" class="btn-submit">FINALIZAR REGISTRO</button>
+        <button type="submit" class="btn">REGISTRAR PERSONAL</button>
     </form>
 </div>
 
 <script src="https://unpkg.com/dexie@3.2.0/dist/dexie.min.js"></script>
 <script>
-    // Configuración Base de Datos
+    // Inicializar DB Local
     const db = new Dexie('HuarmeyDB_2026');
     db.version(1).stores({ registros: '++id, estado' });
 
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyXW-h9qFmP_dZ-Ze4QR6SXD9T0mMmhEaQtXDTVDsJAPamzMl-ixu-RRQni_riSykbdFg/exec';
-
-function updateAge(fecha) {
-    if (!fecha) return;
-    
-    const hoy = new Date();
-    const cumple = new Date(fecha);
-    
-    // Cálculo básico de años
-    let edad = hoy.getFullYear() - cumple.getFullYear();
-    const mes = hoy.getMonth() - cumple.getMonth();
-    
-    // Ajuste preciso: si aún no ha llegado el mes o el día del cumpleaños
-    if (mes < 0 || (mes === 0 && hoy.getDate() < cumple.getDate())) {
-        edad--;
+    function calcularEdad(fecha) {
+        if(!fecha) return;
+        const hoy = new Date();
+        const cumple = new Date(fecha);
+        let edad = hoy.getFullYear() - cumple.getFullYear();
+        const m = hoy.getMonth() - cumple.getMonth();
+        if (m < 0 || (m === 0 && hoy.getDate() < cumple.getDate())) edad--;
+        document.getElementById('edad').value = edad + " años";
     }
-    
-    // Escribe el resultado en el campo con id="edad"
-    const campoEdad = document.getElementById('edad');
-    if (campoEdad) {
-        campoEdad.value = edad + " años";
-    }
-}
 
-        // Guardado y Sincronización
-    document.getElementById('formHuarmey').onsubmit = async (e) => {
+    function toggleFechaIngreso(val) {
+        const div = document.getElementById('divFechaIngreso');
+        const input = document.getElementById('fechaIngreso');
+        if(val === "Ingresaré en otra fecha") {
+            div.classList.remove('hidden');
+            input.required = true;
+        } else {
+            div.classList.add('hidden');
+            input.required = false;
+        }
+    }
+
+    document.getElementById('formEmpadronamiento').onsubmit = async (e) => {
         e.preventDefault();
-
-        // Dentro de document.getElementById('formHuarmey').onsubmit:
-
-// 1. Captura las referencias marcadas
-const referenciasSeleccionadas = Array.from(document.querySelectorAll('input[name="ref_empresa"]:checked'))
-                                     .map(cb => cb.value)
-                                     .join(", ");
-
-// 2. Agrega el campo al objeto 'registro'
-const registro = {
-    // ... otros campos existentes ...
-    conoce: document.getElementById('conoce').value,
-    referencias: referenciasSeleccionadas || "Sin especificar", // Nuevo campo
-    tipoTrabajo: document.getElementById('tipoTrabajo').value,
-    // ... resto del objeto ...
-};
         
         const registro = {
             fecha: new Date().toLocaleString('es-PE'),
@@ -199,54 +167,51 @@ const registro = {
             celular: document.getElementById('celular').value,
             whatsapp: document.getElementById('whatsapp').value,
             conoce: document.getElementById('conoce').value,
+            referencias: document.getElementById('referencias').value,
             tipoTrabajo: document.getElementById('tipoTrabajo').value,
             experiencia: document.getElementById('experiencia').value,
-            referencias: document.getElementById('referencias').value, // Captura del desplegable
-    dep: document.getElementById('dep').value,
-    prov: document.getElementById('prov').value,
-    dist: document.getElementById('dist').value,
-    lugar_residencia: document.getElementById('lugar_residencia').value, // Nuevo campo
-    disponibilidad: document.getElementById('disponibilidad').value,
-    fecha_especifica: document.getElementById('fechaIngreso').value || "N/A",
-    estado: 'P'
-};
-
+            dep: document.getElementById('dep').value,
+            prov: document.getElementById('prov').value,
+            dist: document.getElementById('dist').value,
+            disponibilidad: document.getElementById('disponibilidad').value === "Inmediato" ? 
+                            "Inmediato" : "Fecha: " + document.getElementById('fechaIngreso').value,
+            estado: 'Pendiente'
+        };
+        
         await db.registros.add(registro);
-        alert("✅ Registro guardado. Se enviará cuando haya internet.");
+        alert("✅ Registro guardado localmente.");
         e.target.reset();
-        document.getElementById('divFechaIngreso').classList.add('hidden');
-        syncData();
+        document.getElementById('edad').value = "";
+        sincronizar();
     };
 
-    async function syncData() {
+    async function sincronizar() {
         if (!navigator.onLine) return;
-        const pending = await db.registros.where('estado').equals('Pendiente').toArray();
+        const pends = await db.registros.where('estado').equals('Pendiente').toArray();
         
-        for (let item of pending) {
+        for (let r of pends) {
             try {
-                const response = await fetch(API_URL, {
+                const res = await fetch('TU_URL_DE_APPS_SCRIPT', {
                     method: 'POST',
                     mode: 'no-cors', // Importante para Google Apps Script
-                    body: JSON.stringify(item)
+                    body: JSON.stringify(r)
                 });
-                await db.registros.update(item.id, { estado: 'Sincronizado' });
+                await db.registros.update(r.id, { estado: 'Sincronizado' });
             } catch (err) {
-                console.error("Error de sincronización", err);
+                console.error("Error sincronizando:", err);
             }
         }
     }
 
-    // Monitoreo de conexión
     window.addEventListener('online', () => {
-        document.getElementById('connection-status').classList.remove('offline');
-        syncData();
+        document.getElementById('offline-msg').style.display = 'none';
+        sincronizar();
     });
     window.addEventListener('offline', () => {
-        const bar = document.getElementById('connection-status');
-        bar.textContent = "⚠️ MODO OFFLINE ACTIVADO";
-        bar.classList.add('offline');
+        document.getElementById('offline-msg').style.display = 'block';
     });
 
+    // Registrar Service Worker
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js');
     }
