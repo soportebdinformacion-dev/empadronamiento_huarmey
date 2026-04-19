@@ -141,29 +141,29 @@
    async function sincronizar() {
     if (!navigator.onLine) return;
 
-    // Buscamos datos pendientes en el teléfono
-    const registrosPendientes = await db.registros.where('estado').equals('P').toArray();
-    
-    for (let reg of registrosPendientes) {
-        try {
-            // PEGA AQUÍ LA URL QUE COPIASTE EN EL PASO 2
-            const URL_GOOGLE = 'https://script.google.com/macros/s/AKfycbxDTT3TqCLnzqe-jNUKcW9x4fKTrxiznK83odKTQs9vIeRFttuYzGMFvXAdruor_knxcw/exec';
+    const db = new Dexie('HuarmeyDB_2026'); // Asegúrate de que el nombre de la DB sea el mismo
+    db.version(1).stores({ registros: '++id, estado' });
 
-            // Usamos 'no-cors' para saltar las protecciones del navegador que bloquean a Google
+    const pendientes = await db.registros.where('estado').equals('P').toArray();
+    
+    for (let r of pendientes) {
+        try {
+            // URL QUE COPIASTE EN EL PASO ANTERIOR
+            const URL_GOOGLE = 'https://script.google.com/macros/s/AKfycbxDTT3TqCLnzqe-jNUKcW9x4fKTrxiznK83odKTQs9vIeRFttuYzGMFvXAdruor_knxcw/exec'; 
+
             await fetch(URL_GOOGLE, {
                 method: 'POST',
-                mode: 'no-cors', 
+                mode: 'no-cors', // Saltamos la restricción de seguridad
                 cache: 'no-cache',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(reg)
+                body: JSON.stringify(r)
             });
 
-            // Si llegamos aquí sin que falle la red, marcamos como Enviado
-            await db.registros.update(reg.id, { estado: 'E' });
-            console.log("¡Enviado con éxito!");
+            // Si llegamos aquí, marcamos como enviado
+            await db.registros.update(r.id, { estado: 'E' });
+            console.log("Registro de " + r.dni + " enviado.");
 
         } catch (error) {
-            console.error("Error crítico de envío:", error);
+            console.error("Error al enviar registro:", error);
         }
     }
 }
