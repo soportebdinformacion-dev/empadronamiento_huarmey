@@ -55,11 +55,11 @@
             <label>Apellidos y Nombres</label>
             <input type="text" id="apellidos" required placeholder="Nombre completo">
 
-           <label>Fecha de Nacimiento</label>
-           <input type="date" id="nacimiento" required onchange="updateAge(this.value)">
+           <label>Fecha de Nacimiento:</label>
+        <input type="date" id="nacimiento" required onchange="updateAge(this.value)">
 
-            <label>Edad (Calculada)</label>
-            <input type="text" id="edad" readonly style="background: #f0f0f0;">
+           <label>Edad:</label>
+        <input type="text" id="edad" readonly style="background:#eee">
 
             <label>N° de Hijos</label>
             <input type="number" id="hijos" min="0" required>
@@ -146,20 +146,22 @@
 
     const API_URL = 'https://script.google.com/macros/s/AKfycbyXW-h9qFmP_dZ-Ze4QR6SXD9T0mMmhEaQtXDTVDsJAPamzMl-ixu-RRQni_riSykbdFg/exec';
 
-    function updateAge(birthDate) {
-    if (!birthDate) return;
+function updateAge(fecha) {
+    if (!fecha) return;
     
-    const today = new Date();
-    const birth = new Date(birthDate);
+    const hoy = new Date();
+    const cumple = new Date(fecha);
     
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
+    let edad = hoy.getFullYear() - cumple.getFullYear();
+    const mes = hoy.getMonth() - cumple.getMonth();
     
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-        age--;
+    // Ajuste por si aún no ha cumplido años en el mes actual
+    if (mes < 0 || (mes === 0 && hoy.getDate() < cumple.getDate())) {
+        edad--;
     }
     
-    document.getElementById('edad').value = age + " años";
+    // IMPORTANTE: El ID debe ser 'edad' para que coincida con tu input
+    document.getElementById('edad').value = edad + " años";
 }
 
         // Guardado y Sincronización
