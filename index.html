@@ -24,6 +24,9 @@
         .syncing { animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .hidden { display: none; }
+
+        /* Estilos de la Lista de Pendientes */
+        #lista-pendientes { margin-top: 10px; font-size: 0.75rem; text-align: left; background: rgba(255,255,255,0.6); border-radius: 8px; padding: 8px; max-height: 120px; overflow-y: auto; border: 1px dashed #999; }
     </style>
 </head>
 <body>
@@ -36,6 +39,10 @@
         <div id="network-status">Verificando red...</div>
         <div id="sync-status" style="font-size: 0.8rem; margin-top: 5px; color: #555;">
             Registros pendientes: <span id="pending-count">0</span>
+        </div>
+        <div id="lista-pendientes" class="hidden">
+            <strong style="color:#333; display:block; margin-bottom:5px;">Por enviar:</strong>
+            <div id="items-pendientes"></div>
         </div>
     </div>
 
@@ -143,14 +150,29 @@
 
 <script src="https://unpkg.com/dexie@3.2.0/dist/dexie.min.js"></script>
 <script>
-    // 1. Inicializar Base de Datos (Mantenemos un solo nombre consistente)
+    // 1. Inicializar Base de Datos
     const db = new Dexie('HuarmeyDB_2026');
     db.version(1).stores({ registros: '++id, estado' });
 
-    // 2. Función de Red y Estados
+    // 2. Función de Red y Estados (ACTUALIZADA CON LISTA)
     async function actualizarContador() {
-        const count = await db.registros.where('estado').equals('P').count();
-        document.getElementById('pending-count').innerText = count;
+        const pends = await db.registros.where('estado').equals('P').toArray();
+        const countSpan = document.getElementById('pending-count');
+        const listaDiv = document.getElementById('lista-pendientes');
+        const itemsDiv = document.getElementById('items-pendientes');
+        
+        countSpan.innerText = pends.length;
+
+        if (pends.length > 0) {
+            listaDiv.classList.remove('hidden');
+            itemsDiv.innerHTML = pends.map(r => 
+                `<div style="margin-bottom:4px; padding:2px; border-bottom:1px solid rgba(0,0,0,0.05);">
+                    DNI: <strong>${r.dni}</strong> - ${r.apellidos.toUpperCase()}
+                </div>`
+            ).join('');
+        } else {
+            listaDiv.classList.add('hidden');
+        }
     }
 
     function updateNetStatus() {
@@ -178,7 +200,6 @@
 
         for (let r of pendientes) {
             try {
-                // TU URL DE GOOGLE
                 const URL_GOOGLE = 'https://script.google.com/macros/s/AKfycbwMk58IsL8vagun81mbNmexLFiFuxJFSaKq12Kj4pUAbZTGnLdv_3vzU7T0xcAe2Nd2/exec'; 
 
                 await fetch(URL_GOOGLE, {
@@ -198,7 +219,7 @@
         actualizarContador();
     }
 
-    // 4. Utilidades (Edad y UI)
+    // 4. Utilidades
     function calcularEdad(fecha) {
         if(!fecha) return;
         const hoy = new Date();
@@ -239,20 +260,19 @@
             zona: document.getElementById('zona').value,
             disponibilidad: document.getElementById('disponibilidad').value === "Inmediato" ? 
                             "Inmediato" : "Fecha: " + document.getElementById('fechaIngreso').value,
-            estado: 'P' // P = Pendiente
+            estado: 'P'
         };
         
         await db.registros.add(registro);
         alert("✅ Registro guardado localmente.");
         e.target.reset();
         document.getElementById('edad').value = "";
-        updateNetStatus(); // Dispara sincronización si hay red
+        updateNetStatus();
     };
 
-    // Listeners
     window.addEventListener('online', updateNetStatus);
     window.addEventListener('offline', updateNetStatus);
-    updateNetStatus(); // Ejecución inicial
+    updateNetStatus();
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js');
