@@ -16,7 +16,13 @@
         input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1.5px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
         input:focus { border-color: var(--verde); outline: none; }
         .btn { background: var(--verde); color: white; border: none; width: 100%; padding: 16px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; margin-top: 25px; cursor: pointer; transition: 0.3s; }
-        .offline-notice { background: #FFEBEE; color: #C62828; text-align: center; padding: 8px; border-radius: 5px; font-size: 0.8rem; display: none; margin-bottom: 10px; }
+        
+        /* Indicadores de Red y Sincronización */
+        #status-container { margin-bottom: 20px; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; font-size: 0.9rem; transition: 0.3s; }
+        .online { background-color: #C8E6C9; color: #2E7D32; border: 1px solid #2E7D32; }
+        .offline { background-color: #FFCDD2; color: #C62828; border: 1px solid #C62828; }
+        .syncing { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .hidden { display: none; }
     </style>
 </head>
@@ -25,12 +31,17 @@
 <div class="card">
     <img src="ICONO HUARMEY.png" class="logo" alt="Agrícola Huarmey">
     <h2>Campaña Agrícola 2026</h2>
-    <div id="offline-msg" class="offline-notice">⚠️ Estás trabajando sin conexión. Los datos se sincronizarán después.</div>
+    
+    <div id="status-container" class="online">
+        <div id="network-status">Verificando red...</div>
+        <div id="sync-status" style="font-size: 0.8rem; margin-top: 5px; color: #555;">
+            Registros pendientes: <span id="pending-count">0</span>
+        </div>
+    </div>
 
     <form id="formEmpadronamiento">
         <section>
             <legend>1. Información Personal</legend>
-            
             <label>Tipo de Registro:</label>
             <select id="tipoReg" required>
                 <option value="Registro independiente">Registro independiente</option>
@@ -43,7 +54,7 @@
             </select>
 
             <label>DNI (8 dígitos):</label>
-            <input type="number" id="dni" required minlength="8" maxlength="8" oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);">
+            <input type="number" id="dni" required oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);">
 
             <label>Apellidos y Nombres:</label>
             <input type="text" id="apellidos" required placeholder="Ej: Perez Garcia, Juan">
@@ -57,7 +68,7 @@
             <label>N° de Hijos:</label>
             <input type="number" id="hijos" required min="0" value="0">
 
-            <label>Celular / WhatsApp (9 dígitos):</label>
+            <label>Celular / WhatsApp:</label>
             <div style="display:flex; gap:10px">
                 <input type="number" id="celular" placeholder="Celular" required oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);">
                 <input type="number" id="whatsapp" placeholder="WhatsApp" required oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);">
@@ -85,7 +96,6 @@
 
         <section>
             <legend>2. Laboral y Residencia</legend>
-            
             <label>Tipo de trabajo:</label>
             <select id="tipoTrabajo" required>
                 <option value="Campo">Campo</option>
@@ -96,7 +106,7 @@
             <select id="modalidad" required>
                 <option value="Ida y vuelta">Ida y vuelta</option>
                 <option value="Campamento">Campamento</option>
-                </select>
+            </select>
 
             <label>Experiencia:</label>
             <select id="experiencia" required>
@@ -105,9 +115,9 @@
                 <option value="Cosecha arándanos jornal">Cosecha arándanos jornal</option>
                 <option value="Operario packing jornal">Operario packing jornal</option>
                 <option value="Conductor AI-II-III">Conductor AI-II-III</option>
-                </select>
+            </select>
 
-            <label>Ubicación (Dep / Prov / Dist):</label>
+            <label>Ubicación:</label>
             <input type="text" id="dep" placeholder="Departamento" required>
             <input type="text" id="prov" placeholder="Provincia" required>
             <input type="text" id="dist" placeholder="Distrito" required>
@@ -121,7 +131,6 @@
                 <option value="Inmediato">Inmediato</option>
                 <option value="Ingresaré en otra fecha">Ingresaré en otra fecha</option>
             </select>
-
             <div id="divFechaIngreso" class="hidden">
                 <label>Fecha de Ingreso:</label>
                 <input type="date" id="fechaIngreso">
@@ -134,67 +143,80 @@
 
 <script src="https://unpkg.com/dexie@3.2.0/dist/dexie.min.js"></script>
 <script>
-    // Inicializar DB Local
-    const db = new Dexie('HuarmeyFX_2026');
+    // 1. Inicializar Base de Datos (Mantenemos un solo nombre consistente)
+    const db = new Dexie('HuarmeyDB_2026');
     db.version(1).stores({ registros: '++id, estado' });
 
-   async function sincronizar() {
-    if (!navigator.onLine) return;
-
-    const db = new Dexie('HuarmeyDB_2026'); // Asegúrate de que el nombre de la DB sea el mismo
-    db.version(1).stores({ registros: '++id, estado' });
-
-    const pendientes = await db.registros.where('estado').equals('P').toArray();
-    
-    for (let r of pendientes) {
-        try {
-            // URL QUE COPIASTE EN EL PASO ANTERIOR
-            const URL_GOOGLE = 'https://script.google.com/macros/s/AKfycbxDTT3TqCLnzqe-jNUKcW9x4fKTrxiznK83odKTQs9vIeRFttuYzGMFvXAdruor_knxcw/exec'; 
-
-            await fetch(URL_GOOGLE, {
-                method: 'POST',
-                mode: 'no-cors', // Saltamos la restricción de seguridad
-                cache: 'no-cache',
-                body: JSON.stringify(r)
-            });
-
-            // Si llegamos aquí, marcamos como enviado
-            await db.registros.update(r.id, { estado: 'E' });
-            console.log("Registro de " + r.dni + " enviado.");
-
-        } catch (error) {
-            console.error("Error al enviar registro:", error);
-        }
+    // 2. Función de Red y Estados
+    async function actualizarContador() {
+        const count = await db.registros.where('estado').equals('P').count();
+        document.getElementById('pending-count').innerText = count;
     }
-}
 
+    function updateNetStatus() {
+        const statusCont = document.getElementById('status-container');
+        const netText = document.getElementById('network-status');
+        if (navigator.onLine) {
+            statusCont.className = "online";
+            netText.innerText = "● CONECTADO";
+            sincronizar();
+        } else {
+            statusCont.className = "offline";
+            netText.innerText = "○ SIN CONEXIÓN (Modo Local)";
+        }
+        actualizarContador();
+    }
+
+    // 3. Sincronización Maestra
+    async function sincronizar() {
+        if (!navigator.onLine) return;
+        const pendientes = await db.registros.where('estado').equals('P').toArray();
+        if (pendientes.length === 0) return;
+
+        const syncText = document.getElementById('sync-status');
+        syncText.classList.add('syncing');
+
+        for (let r of pendientes) {
+            try {
+                // TU URL DE GOOGLE
+                const URL_GOOGLE = 'https://script.google.com/macros/s/AKfycbwMk58IsL8vagun81mbNmexLFiFuxJFSaKq12Kj4pUAbZTGnLdv_3vzU7T0xcAe2Nd2/exec'; 
+
+                await fetch(URL_GOOGLE, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    body: JSON.stringify(r)
+                });
+
+                await db.registros.update(r.id, { estado: 'E' });
+                console.log("Enviado: " + r.dni);
+            } catch (error) {
+                console.error("Fallo de envío:", error);
+            }
+        }
+        syncText.classList.remove('syncing');
+        actualizarContador();
+    }
+
+    // 4. Utilidades (Edad y UI)
     function calcularEdad(fecha) {
         if(!fecha) return;
         const hoy = new Date();
         const cumple = new Date(fecha);
         let edad = hoy.getFullYear() - cumple.getFullYear();
-        const m = hoy.getMonth() - cumple.getMonth();
-        if (m < 0 || (m === 0 && hoy.getDate() < cumple.getDate())) edad--;
+        if (hoy.getMonth() < cumple.getMonth() || (hoy.getMonth() === cumple.getMonth() && hoy.getDate() < cumple.getDate())) edad--;
         document.getElementById('edad').value = edad + " años";
     }
 
     function toggleFechaIngreso(val) {
         const div = document.getElementById('divFechaIngreso');
-        const input = document.getElementById('fechaIngreso');
-        if(val === "Ingresaré en otra fecha") {
-            div.classList.remove('hidden');
-            input.required = true;
-        } else {
-            div.classList.add('hidden');
-            input.required = false;
-        }
+        document.getElementById('fechaIngreso').required = (val === "Ingresaré en otra fecha");
+        div.className = (val === "Ingresaré en otra fecha") ? "" : "hidden";
     }
 
+    // 5. Envío del Formulario
     document.getElementById('formEmpadronamiento').onsubmit = async (e) => {
         e.preventDefault();
-
-        const refs = Array.from(document.querySelectorAll('input[name="ref"]:checked'))
-                      .map(cb => cb.value).join(", ");
         
         const registro = {
             fecha: new Date().toLocaleString('es-PE'),
@@ -209,7 +231,7 @@
             conoce: document.getElementById('conoce').value,
             referencias: document.getElementById('referencias').value,
             tipoTrabajo: document.getElementById('tipoTrabajo').value,
-            modo: document.getElementById('modalidad').value,
+            modalidad: document.getElementById('modalidad').value,
             experiencia: document.getElementById('experiencia').value,
             dep: document.getElementById('dep').value,
             prov: document.getElementById('prov').value,
@@ -217,55 +239,21 @@
             zona: document.getElementById('zona').value,
             disponibilidad: document.getElementById('disponibilidad').value === "Inmediato" ? 
                             "Inmediato" : "Fecha: " + document.getElementById('fechaIngreso').value,
-            estado: 'Pendiente'
+            estado: 'P' // P = Pendiente
         };
         
         await db.registros.add(registro);
         alert("✅ Registro guardado localmente.");
         e.target.reset();
         document.getElementById('edad').value = "";
-        sincronizar();
+        updateNetStatus(); // Dispara sincronización si hay red
     };
 
-    async function sincronizar() {
-    if (!navigator.onLine) return;
-    
-    const pends = await db.registros.where('estado').equals('P').toArray();
-    
-    for (let r of pends) {
-        try {
-            // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT
-            const urlApp = 'https://script.google.com/macros/s/AKfycbwMk58IsL8vagun81mbNmexLFiFuxJFSaKq12Kj4pUAbZTGnLdv_3vzU7T0xcAe2Nd2/exec';
+    // Listeners
+    window.addEventListener('online', updateNetStatus);
+    window.addEventListener('offline', updateNetStatus);
+    updateNetStatus(); // Ejecución inicial
 
-            await fetch(urlApp, {
-                method: 'POST',
-                mode: 'no-cors', // ESTO ES VITAL para evitar errores de seguridad
-                body: JSON.stringify(r),
-                headers: {
-                    'Content-Type': 'text/plain' // Usamos text/plain para evitar el pre-vuelo de CORS
-                }
-            });
-
-            // Con no-cors no podemos leer la respuesta, pero si no hay error de red
-            // marcamos como enviado ('E')
-            await db.registros.update(r.id, { estado: 'E' });
-            console.log("DNI " + r.dni + " enviado con éxito.");
-
-        } catch (error) {
-            console.error("Error al enviar:", error);
-        }
-    }
-}
-
-    window.addEventListener('online', () => {
-        document.getElementById('offline-msg').style.display = 'none';
-        sincronizar();
-    });
-    window.addEventListener('offline', () => {
-        document.getElementById('offline-msg').style.display = 'block';
-    });
-
-    // Registrar Service Worker
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js');
     }
