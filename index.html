@@ -55,8 +55,11 @@
             <label>Apellidos y Nombres</label>
             <input type="text" id="apellidos" required placeholder="Nombre completo">
 
-            <label>Fecha de Nacimiento</label>
-            <input type="date" id="nacimiento" required onchange="updateAge(this.value)">
+           <label>Fecha de Nacimiento</label>
+           <input type="date" id="nacimiento" required onchange="updateAge(this.value)">
+
+            <label>Edad (Calculada)</label>
+            <input type="text" id="edad" readonly style="background: #f0f0f0;">
 
             <label>Edad (Calculada)</label>
             <input type="text" id="edad" readonly style="background: #f0f0f0;">
@@ -147,37 +150,20 @@
     const API_URL = 'https://script.google.com/macros/s/AKfycbyXW-h9qFmP_dZ-Ze4QR6SXD9T0mMmhEaQtXDTVDsJAPamzMl-ixu-RRQni_riSykbdFg/exec';
 
     function updateAge(birthDate) {
-        if (!birthDate) return;
-        const diff = Date.now() - new Date(birthDate).getTime();
-        const age = new Date(diff).getUTCFullYear() - 1970;
-        document.getElementById('edad').value = age + " años";
-    }
-
-    function toggleFechaIngreso(valor) {
-    const contenedorFecha = document.getElementById('divFechaIngreso');
-    const inputFecha = document.getElementById('fechaIngreso');
+    if (!birthDate) return;
     
-    if (valor === "Ingresaré en otra fecha") {
-        contenedorFecha.style.display = 'block';
-        inputFecha.required = true;
-    } else {
-        contenedorFecha.style.display = 'none';
-        inputFecha.required = false;
-        inputFecha.value = ""; // Limpia el valor si cambia a Inmediato
+    const today = new Date();
+    const birth = new Date(birthDate);
+    
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
     }
+    
+    document.getElementById('edad').value = age + " años";
 }
-
-    function toggleFechaIngreso(val) {
-        const div = document.getElementById('divFechaIngreso');
-        const input = document.getElementById('fechaIngreso');
-        if (val === "Ingresaré en otra fecha") {
-            div.classList.remove('hidden');
-            input.setAttribute('required', 'true');
-        } else {
-            div.classList.add('hidden');
-            input.removeAttribute('required');
-        }
-    }
 
         // Guardado y Sincronización
     document.getElementById('formHuarmey').onsubmit = async (e) => {
