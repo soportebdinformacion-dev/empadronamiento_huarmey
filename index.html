@@ -105,6 +105,7 @@
             <input type="text" id="dep" placeholder="Departamento" required>
             <input type="text" id="prov" placeholder="Provincia" required>
             <input type="text" id="dist" placeholder="Distrito" required>
+            <input type="text" id="zona" placeholder="Zona Ej. Alan Garcia" required>
         </section>
 
         <section>
@@ -173,6 +174,7 @@
             dep: document.getElementById('dep').value,
             prov: document.getElementById('prov').value,
             dist: document.getElementById('dist').value,
+            zona: document.getElementById('zona').value,
             disponibilidad: document.getElementById('disponibilidad').value === "Inmediato" ? 
                             "Inmediato" : "Fecha: " + document.getElementById('fechaIngreso').value,
             estado: 'Pendiente'
