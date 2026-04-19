@@ -48,7 +48,7 @@
 
     <form id="formEmpadronamiento">
         <section>
-            <legend>1. Información Personal</legend>
+            <legend>📝 Información Personal</legend>
             <label>Tipo de Registro:</label>
             <select id="tipoReg" required>
                 <option value="Registro independiente">Registro independiente</option>
@@ -57,7 +57,9 @@
                 <option value="ALEX RUFASTO">ALEX RUFASTO</option>
                 <option value="OSCAR BARREDA">OSCAR BARREDA</option>
                 <option value="PILAR MONJA">PILAR MONJA</option>
-                <option value="ELESTER CHINCHAY">ELESTER CHINCHAY</option>
+                <option value="ELESTER GARCIA">ELESTER GARCIA</option>
+                <option value="FELIPE CHINCHAY">FELIPE CHINCHAY</option>
+                <option value="NOEMI CHINCHAY">NOEMI CHINCHAY</option>
             </select>
 
             <label>DNI (8 dígitos):</label>
@@ -102,7 +104,7 @@
         </section>
 
         <section>
-            <legend>2. Laboral y Residencia</legend>
+            <legend>🛠 Laboral y Residencia</legend>
             <label>Tipo de trabajo:</label>
             <select id="tipoTrabajo" required>
                 <option value="Campo">Campo</option>
@@ -119,8 +121,14 @@
             <select id="experiencia" required>
                 <option value="Ninguno">Ninguno</option>
                 <option value="Líder de zona + cosechador">Líder de zona + cosechador</option>
+                <option value="Líder de zona">Líder de zonar</option>
+                <option value="Cosecha arándanos rendimiento">Cosecha arándanos rendimiento</option>
                 <option value="Cosecha arándanos jornal">Cosecha arándanos jornal</option>
+                <option value="Supervisor de campo">Supervisor de campo</option>
+                <option value="Labores de arándanos">Labores de arándano</option>
+                <option value="Servicios generales">Servicios generales</option>
                 <option value="Operario packing jornal">Operario packing jornal</option>
+                <option value="Operario packing rendimiento">Operario packing rendimiento</option>
                 <option value="Conductor AI-II-III">Conductor AI-II-III</option>
             </select>
 
@@ -132,7 +140,7 @@
         </section>
 
         <section>
-            <legend>3. Confirmación</legend>
+            <legend>✔ Confirmación</legend>
             <label>Disponibilidad:</label>
             <select id="disponibilidad" required onchange="toggleFechaIngreso(this.value)">
                 <option value="Inmediato">Inmediato</option>
