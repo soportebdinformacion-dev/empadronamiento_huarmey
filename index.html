@@ -140,31 +140,30 @@
 
    async function sincronizar() {
     if (!navigator.onLine) return;
-    
-    // Obtenemos registros con estado 'P' (Pendiente)
-    const pends = await db.registros.where('estado').equals('P').toArray();
-    
-    for (let r of pends) {
-        try {
-            // Reemplaza con tu URL real de implementación
-            const URL_WEB_APP = 'https://script.google.com/macros/s/AKfycbwsDxww8_RGLK2_tqqupN18_XAe3TdnoiDQLWNT2MwL-eUnJkD-M0ALv-w0UOywEPVfAw/exec'; 
 
-            await fetch(URL_WEB_APP, {
+    // Buscamos datos pendientes en el teléfono
+    const registrosPendientes = await db.registros.where('estado').equals('P').toArray();
+    
+    for (let reg of registrosPendientes) {
+        try {
+            // PEGA AQUÍ LA URL QUE COPIASTE EN EL PASO 2
+            const URL_GOOGLE = 'https://script.google.com/macros/s/AKfycbxDTT3TqCLnzqe-jNUKcW9x4fKTrxiznK83odKTQs9vIeRFttuYzGMFvXAdruor_knxcw/exec';
+
+            // Usamos 'no-cors' para saltar las protecciones del navegador que bloquean a Google
+            await fetch(URL_GOOGLE, {
                 method: 'POST',
-                mode: 'no-cors', // Necesario para Google Apps Script desde el navegador
-                body: JSON.stringify(r),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                mode: 'no-cors', 
+                cache: 'no-cache',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reg)
             });
 
-            // Como usamos no-cors, no podemos leer la respuesta, 
-            // pero si no salta al catch, asumimos éxito y actualizamos a 'E' (Enviado)
-            await db.registros.update(r.id, { estado: 'E' });
-            console.log("Registro sincronizado para DNI: " + r.dni);
-            
+            // Si llegamos aquí sin que falle la red, marcamos como Enviado
+            await db.registros.update(reg.id, { estado: 'E' });
+            console.log("¡Enviado con éxito!");
+
         } catch (error) {
-            console.error("Fallo al sincronizar:", error);
+            console.error("Error crítico de envío:", error);
         }
     }
 }
