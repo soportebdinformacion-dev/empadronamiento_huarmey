@@ -130,7 +130,7 @@
     const db = new Dexie('HuarmeyDB_2026');
     db.version(1).stores({ registros: '++id, estado' });
 
-    const API_URL = 'TU_URL_DE_GOOGLE_APPS_SCRIPT';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyXW-h9qFmP_dZ-Ze4QR6SXD9T0mMmhEaQtXDTVDsJAPamzMl-ixu-RRQni_riSykbdFg/exec';
 
     function updateAge(birthDate) {
         if (!birthDate) return;
