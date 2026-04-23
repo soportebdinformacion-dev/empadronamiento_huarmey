@@ -166,7 +166,7 @@
 <script src="https://unpkg.com/dexie@3.2.0/dist/dexie.min.js"></script>
 <script>
     // 1. Inicializar Base de Datos
-    const db = new Dexie('HuarmeyFX_2026');
+    const db = new Dexie('BD_REGISTROS_HUARMEY');
     db.version(1).stores({ registros: '++id, estado' });
 
     // 2. Función de Red y Estados (ACTUALIZADA CON LISTA)
@@ -215,7 +215,7 @@
 
         for (let r of pendientes) {
             try {
-                const URL_GOOGLE = 'https://script.google.com/macros/s/AKfycbwMk58IsL8vagun81mbNmexLFiFuxJFSaKq12Kj4pUAbZTGnLdv_3vzU7T0xcAe2Nd2/exec'; 
+                const URL_GOOGLE = 'https://script.google.com/macros/s/AKfycbyrtuMmJD70bxQrSVz8BK0Qqbcgl3ZofsvqX9HKphxNu0s1twDBPs0rsjl0I1jUTg3JkQ/exec'; 
 
                 await fetch(URL_GOOGLE, {
                     method: 'POST',
