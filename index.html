@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Empadronamiento Huarmey 2026</title>
-    <link rel="manifest" href="manifest.json">
-    
     <style>
         :root { --rojo: #C62828; --verde: #2E7D32; --gris: #f4f4f4; --blanco: #ffffff; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--gris); margin: 0; padding: 10px; }
@@ -27,6 +25,7 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .hidden { display: none; }
 
+        /* Estilos de la Lista de Pendientes */
         #lista-pendientes { margin-top: 10px; font-size: 0.75rem; text-align: left; background: rgba(255,255,255,0.6); border-radius: 8px; padding: 8px; max-height: 120px; overflow-y: auto; border: 1px dashed #999; }
     </style>
 </head>
@@ -96,15 +95,13 @@
             <label>Edad:</label>
             <input type="text" id="edad" readonly style="background:#f0f0f0" placeholder="Calculado automáticamente">
 
-            <label>Sexo:</label>
+             <label>Sexo:</label>
             <select id="genero" required>
                 <option value="MASCULINO">MASCULINO</option>
                 <option value="FEMENINO">FEMENINO</option>
-            </select>
-        </section>
+                </select>
+            </section>
 
-        <section>
-            <legend>📞 Contacto y Referencias</legend>
             <label>N° de Hijos:</label>
             <input type="number" id="hijos" required min="0" value="0">
 
@@ -184,7 +181,7 @@
         </section>
 
         <button type="submit" class="btn">REGISTRAR PERSONAL</button>
-        <button type="button" onclick="descargarHTML()" style="background:#555; margin-top:10px;" class="btn">Dwonloap Form (Solo administradores)</button>
+        <button type="button" onclick="descargarHTML()" style="background:#555; margin-top:10px;" class="btn">Downloap App (Solo administradores)</button>
     </form>
 </div>
 
@@ -194,7 +191,7 @@
     const db = new Dexie('BD_REGISTROS_HUARMEY');
     db.version(1).stores({ registros: '++id, estado' });
 
-    // 2. Función de Red y Estados
+    // 2. Función de Red y Estados (ACTUALIZADA CON LISTA)
     async function actualizarContador() {
         const pends = await db.registros.where('estado').equals('P').toArray();
         const countSpan = document.getElementById('pending-count');
@@ -306,43 +303,50 @@
         
         await db.registros.add(registro);
         alert("✅ Registro guardado localmente.");
-        alert("✅ GRACIAS POR REGISTRARTE, Agrícola Huarmey - fundo Frusan.");
+        alert("✅ GRACIAS POR REGISTRARTE, Agrícola Huarmen - fundo Frusan.");
         e.target.reset();
         document.getElementById('edad').value = "";
         updateNetStatus();
     };
 
-    /* --- LÓGICA DE INSTALACIÓN Y DESCARGA --- */
-
-    function descargarHTML() {
-        const htmlContent = document.documentElement.outerHTML;
-        const blob = new Blob([htmlContent], { type: 'text/html' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'Empadronamiento_Huarmey_2026.html';
-        a.click();
-    }
-
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-    });
-
-    // Registro del Service Worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('service-worker.js').then(reg => {
-                console.log('Service Worker registrado', reg);
-            }).catch(err => {
-                console.log('Error al registrar Service Worker', err);
-            });
-        });
-    }
-
     window.addEventListener('online', updateNetStatus);
     window.addEventListener('offline', updateNetStatus);
     updateNetStatus();
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js');
+    }
+
+    /* --- NUEVA LÓGICA DE INSTALACIÓN Y DESCARGA (si hay problema con el codigo solo tienes que borrarlo) --- */
+
+// Botón para descargar el archivo HTML actual
+function descargarHTML() {
+    const htmlContent = document.documentElement.outerHTML;
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Empadronamiento_Huarmey_2026.html';
+    a.click();
+}
+
+// Lógica para detectar si la App se puede instalar (PWA)
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log("App lista para ser instalada en el celular");
+});
+
+// Función para invocar la instalación (puedes llamarla desde un botón si gustas)
+async function instalarApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') console.log('Usuario instaló la App');
+        deferredPrompt = null;
+    }
+}
+
 </script>
 </body>
 </html>
