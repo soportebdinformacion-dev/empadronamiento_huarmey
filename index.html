@@ -181,6 +181,7 @@
         </section>
 
         <button type="submit" class="btn">REGISTRAR PERSONAL</button>
+        <button type="button" onclick="descargarHTML()" style="background:#555; margin-top:10px;" class="btn">DESCARGAR ARCHIVO HTML</button>
     </form>
 </div>
 
@@ -315,6 +316,37 @@
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js');
     }
+
+    /* --- NUEVA LÓGICA DE INSTALACIÓN Y DESCARGA (si hay problema con el codigo solo tienes que borrarlo) --- */
+
+// Botón para descargar el archivo HTML actual
+function descargarHTML() {
+    const htmlContent = document.documentElement.outerHTML;
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Empadronamiento_Huarmey_2026.html';
+    a.click();
+}
+
+// Lógica para detectar si la App se puede instalar (PWA)
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log("App lista para ser instalada en el celular");
+});
+
+// Función para invocar la instalación (puedes llamarla desde un botón si gustas)
+async function instalarApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') console.log('Usuario instaló la App');
+        deferredPrompt = null;
+    }
+}
+
 </script>
 </body>
 </html>
