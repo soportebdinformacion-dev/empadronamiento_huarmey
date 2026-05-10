@@ -8,7 +8,14 @@
         :root { --rojo: #C62828; --verde: #2E7D32; --gris: #f4f4f4; --blanco: #ffffff; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--gris); margin: 0; padding: 10px; }
         .card { background: var(--blanco); max-width: 550px; margin: auto; padding: 20px; border-radius: 15px; border-top: 8px solid var(--rojo); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .logo { display: block; margin: 0 auto 15px; max-width: 160px; }
+        .logo { 
+    display: block; 
+    margin: 0 auto 15px; 
+    width: 100%;       /* Cambia el ancho fijo por 100% */
+    max-width: 100%;   
+    height: auto;      
+    border-radius: 8px; 
+}
         h2 { text-align: center; color: var(--verde); font-size: 1.2rem; margin-bottom: 20px; }
         section { margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 12px; }
         legend { font-weight: bold; color: var(--rojo); font-size: 0.9rem; text-transform: uppercase; }
@@ -32,7 +39,7 @@
 <body>
 
 <div class="card">
-    <img src="ICONO HUARMEY.png" class="logo" alt="Agrícola Huarmey">
+    <img src="FLYER BIENVENIDA FRUSAN.png" class="logo" alt="Logo">
     <h2>Campaña Agrícola 2026</h2>
     
     <div id="status-container" class="online">
