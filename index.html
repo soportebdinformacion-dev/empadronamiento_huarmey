@@ -9,13 +9,13 @@
         body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--gris); margin: 0; padding: 10px; }
         .card { background: var(--blanco); max-width: 550px; margin: auto; padding: 20px; border-radius: 15px; border-top: 8px solid var(--rojo); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .logo { 
-    display: block; 
-    margin: 0 auto 15px; 
-    width: 100%;       /* Cambia el ancho fijo por 100% */
-    max-width: 100%;   
-    height: auto;      
-    border-radius: 8px; 
-}
+            display: block; 
+            margin: 0 auto 15px; 
+            width: 100%;       
+            max-width: 100%;   
+            height: auto;      
+            border-radius: 8px; 
+        }
         h2 { text-align: center; color: var(--verde); font-size: 1.2rem; margin-bottom: 20px; }
         section { margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 12px; }
         legend { font-weight: bold; color: var(--rojo); font-size: 0.9rem; text-transform: uppercase; }
@@ -24,7 +24,6 @@
         input:focus { border-color: var(--verde); outline: none; }
         .btn { background: var(--verde); color: white; border: none; width: 100%; padding: 16px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; margin-top: 25px; cursor: pointer; transition: 0.3s; }
         
-        /* Indicadores de Red y Sincronización */
         #status-container { margin-bottom: 20px; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; font-size: 0.9rem; transition: 0.3s; }
         .online { background-color: #C8E6C9; color: #2E7D32; border: 1px solid #2E7D32; }
         .offline { background-color: #FFCDD2; color: #C62828; border: 1px solid #C62828; }
@@ -32,7 +31,6 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .hidden { display: none; }
 
-        /* Estilos de la Lista de Pendientes */
         #lista-pendientes { margin-top: 10px; font-size: 0.75rem; text-align: left; background: rgba(255,255,255,0.6); border-radius: 8px; padding: 8px; max-height: 120px; overflow-y: auto; border: 1px dashed #999; }
     </style>
 </head>
@@ -90,7 +88,6 @@
                 <option value="Lider MARISOL GUEVARA">Lider MARISOL GUEVARA</option>
                 <option value="Lider JHANET GOMEZ">Lider JHANET GOMEZ</option>
                 <option value="Lider LUIS HUAMAN">Lider LUIS HUAMAN</option>
-                <option value="Lider JULIO SANTISTEBAN">Lider JULIO SANTISTEBAN</option>
             </select>
 
             <label>DNI (8 dígitos):</label>
@@ -109,9 +106,10 @@
             <select id="genero" required>
                 <option value="MASCULINO">MASCULINO</option>
                 <option value="FEMENINO">FEMENINO</option>
-                </select>
-            </section>
+            </select>
+        </section>
 
+        <section>
             <label>N° de Hijos:</label>
             <input type="number" id="hijos" required min="0" value="0">
 
@@ -171,10 +169,10 @@
             </select>
 
             <label>Ubicación:</label>
-            <input type="text" id="dep" placeholder="Departamento" required>
-            <input type="text" id="prov" placeholder="Provincia" required>
-            <input type="text" id="dist" placeholder="Distrito" required>
-            <input type="text" id="zona" placeholder="Zona Ej. Alan Garcia" required>
+            <select id="dep" required><option value="">Departamento</option></select>
+            <select id="prov" required><option value="">Provincia</option></select>
+            <select id="dist" required><option value="">Distrito</option></select>
+            <select id="zona" required><option value="">Zona Ej. Alan Garcia</option></select>
         </section>
 
         <section>
@@ -197,11 +195,109 @@
 
 <script src="https://unpkg.com/dexie@3.2.0/dist/dexie.min.js"></script>
 <script>
-    // 1. Inicializar Base de Datos
+    const URL_GOOGLE = 'https://script.google.com/macros/s/AKfycbzgETb4_54THBZgm7Ah-0VYRzpMLWyEX-BiGYUG-cFCrKrpLA6mAFvnz1pY-B29GQTxkQ/exec'; 
+
+    // Variable global para almacenar la base de datos de ubicaciones
+    let ubicacionesData = [];
+
+    // 1. Inicializar Base de Datos Local
     const db = new Dexie('BD_REGISTROS_HUARMEY');
     db.version(1).stores({ registros: '++id, estado' });
 
-    // 2. Función de Red y Estados (ACTUALIZADA CON LISTA)
+    // Cargar Ubicaciones desde Google Sheets
+    async function cargarUbicaciones() {
+        if (!navigator.onLine) return;
+        try {
+            const response = await fetch(URL_GOOGLE);
+            ubicacionesData = await response.json();
+            
+            // Guardar en localStorage para respaldo offline
+            localStorage.setItem('cache_ubicaciones', JSON.stringify(ubicacionesData));
+            inicializarSelectores();
+        } catch (error) {
+            console.error("Error al cargar ubicaciones:", error);
+            // Si falla el internet o da error, intentar cargar del respaldo local
+            const cache = localStorage.getItem('cache_ubicaciones');
+            if(cache) {
+                ubicacionesData = JSON.parse(cache);
+                inicializarSelectores();
+            }
+        }
+    }
+
+    function inicializarSelectores() {
+        const depSelect = document.getElementById('dep');
+        
+        // Obtener departamentos únicos
+        const departamentos = [...new Set(ubicacionesData.map(item => item.departamento))];
+        
+        depSelect.innerHTML = '<option value="">Departamento</option>';
+        departamentos.forEach(dep => {
+            if(dep) depSelect.innerHTML += `<option value="${dep}">${dep}</option>`;
+        });
+
+        // Evento cambio de Departamento
+        depSelect.onchange = function() {
+            const provSelect = document.getElementById('prov');
+            const distSelect = document.getElementById('dist');
+            const zonaSelect = document.getElementById('zona');
+            
+            provSelect.innerHTML = '<option value="">Provincia</option>';
+            distSelect.innerHTML = '<option value="">Distrito</option>';
+            zonaSelect.innerHTML = '<option value="">Zona Ej. Alan Garcia</option>';
+            
+            if(!this.value) return;
+
+            const provincias = [...new Set(ubicacionesData
+                .filter(item => item.departamento === this.value)
+                .map(item => item.provincia))];
+
+            provincias.forEach(prov => {
+                if(prov) provSelect.innerHTML += `<option value="${prov}">${prov}</option>`;
+            });
+        };
+
+        // Evento cambio de Provincia
+        document.getElementById('prov').onchange = function() {
+            const depValue = document.getElementById('dep').value;
+            const distSelect = document.getElementById('dist');
+            const zonaSelect = document.getElementById('zona');
+            
+            distSelect.innerHTML = '<option value="">Distrito</option>';
+            zonaSelect.innerHTML = '<option value="">Zona Ej. Alan Garcia</option>';
+            
+            if(!this.value) return;
+
+            const distritos = [...new Set(ubicacionesData
+                .filter(item => item.departamento === depValue && item.provincia === this.value)
+                .map(item => item.distrito))];
+
+            distritos.forEach(dist => {
+                if(dist) distSelect.innerHTML += `<option value="${dist}">${dist}</option>`;
+            });
+        };
+
+        // Evento cambio de Distrito
+        document.getElementById('dist').onchange = function() {
+            const depValue = document.getElementById('dep').value;
+            const provValue = document.getElementById('prov').value;
+            const zonaSelect = document.getElementById('zona');
+            
+            zonaSelect.innerHTML = '<option value="">Zona Ej. Alan Garcia</option>';
+            
+            if(!this.value) return;
+
+            const zonas = [...new Set(ubicacionesData
+                .filter(item => item.departamento === depValue && item.provincia === provValue && item.distrito === this.value)
+                .map(item => item.lugar))];
+
+            zonas.forEach(zona => {
+                if(zona) zonaSelect.innerHTML += `<option value="${zona}">${zona}</option>`;
+            });
+        };
+    }
+
+    // 2. Función de Red y Estados
     async function actualizarContador() {
         const pends = await db.registros.where('estado').equals('P').toArray();
         const countSpan = document.getElementById('pending-count');
@@ -229,9 +325,18 @@
             statusCont.className = "online";
             netText.innerText = "● CONECTADO";
             sincronizar();
+            if(ubicacionesData.length === 0) cargarUbicaciones();
         } else {
             statusCont.className = "offline";
             netText.innerText = "○ SIN CONEXIÓN (Modo Local)";
+            // Intentar cargar ubicaciones desde caché en modo offline si no hay red
+            if(ubicacionesData.length === 0) {
+                const cache = localStorage.getItem('cache_ubicaciones');
+                if(cache) {
+                    ubicacionesData = JSON.parse(cache);
+                    inicializarSelectores();
+                }
+            }
         }
         actualizarContador();
     }
@@ -247,8 +352,6 @@
 
         for (let r of pendientes) {
             try {
-                const URL_GOOGLE = 'https://script.google.com/macros/s/AKfycbzgETb4_54THBZgm7Ah-0VYRzpMLWyEX-BiGYUG-cFCrKrpLA6mAFvnz1pY-B29GQTxkQ/exec'; 
-
                 await fetch(URL_GOOGLE, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -282,11 +385,10 @@
         div.className = (val === "Ingresaré en otra fecha") ? "" : "hidden";
     }
 
-    // 5. Envío del Formulario (CON VALIDACIONES SOLICITADAS)
+    // 5. Envío del Formulario
     document.getElementById('formEmpadronamiento').onsubmit = async (e) => {
         e.preventDefault();
 
-        // --- VALIDACIONES NUEVAS ---
         const vDni = document.getElementById('dni').value;
         const vCelular = document.getElementById('celular').value;
         const vWhatsapp = document.getElementById('whatsapp').value;
@@ -305,7 +407,6 @@
             alert("⚠️ El número de WhatsApp debe tener exactamente 9 dígitos.");
             return;
         }
-        // --- FIN VALIDACIONES ---
         
         const registro = {
             fecha: new Date().toLocaleString('es-PE'),
@@ -337,6 +438,13 @@
         alert("✅ GRACIAS POR REGISTRARTE, Agrícola Huarmen - fundo Frusan.");
         e.target.reset();
         document.getElementById('edad').value = "";
+        
+        // Resetear selectores de cascada a su estado base
+        document.getElementById('prov').innerHTML = '<option value="">Provincia</option>';
+        document.getElementById('dist').innerHTML = '<option value="">Distrito</option>';
+        document.getElementById('zona').innerHTML = '<option value="">Zona Ej. Alan Garcia</option>';
+        inicializarSelectores();
+        
         updateNetStatus();
     };
 
@@ -348,34 +456,30 @@
         navigator.serviceWorker.register('service-worker.js');
     }
 
-// Botón para descargar el archivo HTML actual
-function descargarHTML() {
-    const htmlContent = document.documentElement.outerHTML;
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'Empadronamiento_Huarmey_2026.html';
-    a.click();
-}
-
-// Lógica para detectar si la App se puede instalar (PWA)
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    console.log("App lista para ser instalada en el celular");
-});
-
-// Función para invocar la instalación
-async function instalarApp() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') console.log('Usuario instaló la App');
-        deferredPrompt = null;
+    function descargarHTML() {
+        const htmlContent = document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Empadronamiento_Huarmey_2026.html';
+        a.click();
     }
-}
 
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        console.log("App lista para ser instalada en el celular");
+    });
+
+    async function instalarApp() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') console.log('Usuario instaló la App');
+            deferredPrompt = null;
+        }
+    }
 </script>
 </body>
 </html>
